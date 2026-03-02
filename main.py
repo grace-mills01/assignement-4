@@ -12,6 +12,7 @@ class IntNode:
     first: int
     rest: "IntList"
 
+
 IntList = Union[None, IntNode]
 
 
@@ -26,6 +27,7 @@ class WordLinesNode:
     first: WordLines
     rest: "WordLinesList"
 
+
 WordLinesList = Union[None, WordLinesNode]
 
 
@@ -34,12 +36,14 @@ class HashTable:
     bins: List[WordLinesList]
     count: int
 
+
 # Hash function
 def hash_fn(s: str) -> int:
     h = 0
     for ch in s:
         h = h * 31 + ord(ch)
     return h
+
 
 # return whether or not a given IntList contains a given integer
 def intlist_contains(lst: IntList, n: int) -> bool:
@@ -50,6 +54,7 @@ def intlist_contains(lst: IntList, n: int) -> bool:
         curr = curr.rest
     return False
 
+
 # Converts an IntList into a python list
 def intlist_to_list(lst: IntList) -> List[int]:
     result = []
@@ -59,12 +64,13 @@ def intlist_to_list(lst: IntList) -> List[int]:
         curr = curr.rest
     return result
 
+
 # find the all the lines that a given word appears in given a WordLinesList
 # return None if the word does not appear
 def wll_find(wll: WordLinesList, word: str) -> Optional[WordLines]:
-    if(wll == None):
+    if wll == None:
         return None
-    if(wll.first.word == word):
+    if wll.first.word == word:
         return wll.first
     return wll_find(wll.rest, word)
 
@@ -74,23 +80,26 @@ def wll_find(wll: WordLinesList, word: str) -> Optional[WordLines]:
 def make_hash(size: int) -> HashTable:
     return HashTable(bins=[None] * size, count=0)
 
+
 # Return the number of bins in 'ht'.
 def hash_size(ht: HashTable) -> int:
     return len(ht.bins)
+
 
 # Return the number of elements (key-value pairs) in 'ht'.
 def hash_count(ht: HashTable) -> int:
     return ht.count
 
+
 # return the bin index of a given word within the scope of the HT
 def _bin_index(ht: HashTable, word: str) -> int:
     return hash_fn(word) % hash_size(ht)
+
 
 # Return whether 'ht' contains a mapping for the given 'word'.
 def has_key(ht: HashTable, word: str) -> bool:
     idx = _bin_index(ht, word)
     return wll_find(ht.bins[idx], word) is not None
-
 
 
 # Return the line numbers associated with the key 'word' in 'ht'.
@@ -101,6 +110,7 @@ def lookup(ht: HashTable, word: str) -> List[int]:
     if entry is None:
         return []
     return intlist_to_list(entry.lines)
+
 
 # create a new HashTable of twice the length and copy all data over
 def _resize(ht: HashTable) -> None:
@@ -114,6 +124,7 @@ def _resize(ht: HashTable) -> None:
             new_bins[new_idx] = WordLinesNode(wl, new_bins[new_idx])
             curr = curr.rest
     ht.bins = new_bins
+
 
 # Record in 'ht' that 'word' has an occurrence on line 'line'.
 def add(ht: HashTable, word: str, line: int) -> None:
@@ -132,6 +143,7 @@ def add(ht: HashTable, word: str, line: int) -> None:
         if ht.count >= hash_size(ht):
             _resize(ht)
 
+
 # Return the words that have mappings in 'ht'.
 # The returned list should not contain duplicates, but need not be sorted.
 def hash_keys(ht: HashTable) -> List[str]:
@@ -144,7 +156,7 @@ def hash_keys(ht: HashTable) -> List[str]:
     return keys
 
 
-# remove punctuation, quation marks and any non alphabetical characters 
+# remove punctuation, quation marks and any non alphabetical characters
 # from a given string and make it lowercase, seperate each character into
 # its own list item and return
 def clean_line(line: str) -> List[str]:
@@ -172,17 +184,17 @@ def make_concordance(stop_words: HashTable, lines: List[str]) -> HashTable:
 # file.
 def full_concordance(in_file: str, stop_words_file: str, out_file: str) -> None:
     stop_words = make_hash(128)
-    with open(stop_words_file, 'r', encoding='utf-8') as f:
+    with open(stop_words_file, "r", encoding="utf-8") as f:
         for line in f:
             word = line.strip().lower()
             if word:
                 add(stop_words, word, 0)
 
-    with open(in_file, 'r', encoding='utf-8') as f:
+    with open(in_file, "r", encoding="utf-8") as f:
         lines = f.readlines()
     concordance = make_concordance(stop_words, lines)
 
-    with open(out_file, 'w', encoding='utf-8') as f:
+    with open(out_file, "w", encoding="utf-8") as f:
         for word in sorted(hash_keys(concordance)):
             line_nums = sorted(lookup(concordance, word))
             f.write(word + ": " + " ".join(str(n) for n in line_nums) + "\n")
@@ -352,8 +364,24 @@ class Tests(unittest.TestCase):
 
     def test_make_concordance_spec_sample(self):
         stop_words = make_hash(128)
-        for w in ["a","about","be","by","can","do","i","in",
-                  "is","it","of","on","the","this","to","was"]:
+        for w in [
+            "a",
+            "about",
+            "be",
+            "by",
+            "can",
+            "do",
+            "i",
+            "in",
+            "is",
+            "it",
+            "of",
+            "on",
+            "the",
+            "this",
+            "to",
+            "was",
+        ]:
             add(stop_words, w, 0)
         lines = [
             "This is a sample data ((text)) file, to be ",
@@ -370,6 +398,6 @@ class Tests(unittest.TestCase):
         self.assertFalse(has_key(conc, "a"))
 
 
-if __name__ == '__main__':
-    full_concordance("test_input.txt", "test_stop_words.txt", "test_output.txt")
+if __name__ == "__main__":
+    full_concordance("sorcer's_stone.txt", "test_stop_words.txt", "test_output.txt")
     unittest.main()
